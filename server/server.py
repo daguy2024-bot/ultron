@@ -41,7 +41,7 @@ async def process_message(client_id, message):
             logging.info("Unrecognized player! Setting UnderAttack to True.")
             global UnderAttack
             UnderAttack = True
-            send_to_all_clients("{{'attack',attackid={player_uuid}}}")
+            send_to_all_clients(f"{{'attack',attackid={player_uuid}}}")
         else:
             logging.info("Recognized player. No action needed.") # at least say hi
     elif "targetlost" in message:

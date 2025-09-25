@@ -4,6 +4,11 @@
 
 local ws_url = "ws://your.websocket.server:port" -- Change to your WebSocket server URL
 cmd = nil
+cross = {
+    watch = true,
+    attack = false,
+    targetUUID = nil
+}
 
 -- Ensure websocket API is available
 if not http.websocket then
@@ -21,40 +26,45 @@ end
 print("Connected to WebSocket. Sending computer ID:", id)
 ws.send(textutils.serialize({"id" = id}))
 
-function wb() 
+function wb()
+    global cross
+
     while true do
+        sleep(0)
         local event, url, message = os.pullEvent()
         if event == "websocket_message" and url == ws_url then
             print("Received command:", message)
             cmd = textutils.unserialize(message)
             if cmd then
                 if cmd.patrol then
-                    watch = true
-                    attack = false
+                    cross.watch = true
+                    cross.attack = false
                     print("Patrol mode activated.")
                 elseif cmd.attack then
-                    watch = false
-                    attack = true
-                    targetUUID = cmd.attackid
+                    cross.watch = false
+                    cross.attack = true
+                    cross.targetUUID = cmd.attackid
                     print("Attack mode activated. Target UUID:", targetUUID)
                 elseif cmd.stop then
-                    watch = false
-                    attack = false
+                    cross.watch = false
+                    cross.attack = false
                     print("All actions stopped.")
                 end
             else
                 print("Invalid command format.")
             end
         elseif event == "websocket_closed" and url == ws_url then
-            print("WebSocket closed.")
+            print("WebSocket closed. major error")
             break
         end
     end
 end
 
 function patrol()
+    global cross
     while true do
-        if watch then
+        sleep(0)
+        if cross.watch then
             entitylist = android.getNearbyEntities()
             for i, entity in ipairs(entitylist) do
                 if entity.name == "minecraft:player" then
@@ -62,20 +72,23 @@ function patrol()
                     ws.send(textutils.serialize({foundplayer = entity.uuid}))
                 end
             end
-        elseif attack then
+        elseif cross.attack then
             android.attack(targetUUID)
+            sleep(0.3)
             if android.currentTask() == "idle" then
                 print("too far to detect target")
-                attack = false
+                cross.attack = false
             while android.currentTask() ~= "idle" do
                 os.sleep(1)
             end
-            attack = false
+            cross.attack = false
             print("Target lost or defeated")
             ws.send(textutils.serialize({targetlost = targetUUID}))
         end
     end
 end
 
-parrallel.waitForAny(wb, patrol)
+while true do
+    parrallel.waitForAny(wb, patrol)
+end
 ws.close()
