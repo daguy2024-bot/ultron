@@ -10,6 +10,12 @@ cross = {
     targetUUID = nil
 }
 
+post = { -- CHANGE THESE COORDS PER GUARD
+    x = 0,
+    y = 0,
+    z = 0
+}
+
 -- Ensure websocket API is available
 if not http.websocket then
     print("WebSocket API not available. Update ComputerCraft: Tweaked.")
@@ -65,6 +71,8 @@ function patrol()
     while true do
         sleep(0)
         if cross.watch then
+            if not 
+            android.moveTo(post.x, post.y, post.z)
             entitylist = android.getNearbyEntities()
             for i, entity in ipairs(entitylist) do
                 if entity.name == "minecraft:player" then
