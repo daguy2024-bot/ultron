@@ -71,13 +71,14 @@ function patrol()
     while true do
         sleep(0)
         if cross.watch then
-            if not 
-            android.moveTo(post.x, post.y, post.z)
+            if andoid.getSelf().posX ~= post.x and andoid.getSelf().posY ~= post.y and andoid.getSelf().posZ ~= post.z then
+                android.moveTo(post.x, post.y, post.z)
+            end
             entitylist = android.getNearbyEntities()
             for i, entity in ipairs(entitylist) do
                 if entity.name == "minecraft:player" then
                     print("Player detected:", entity.name)
-                    ws.send(textutils.serialize({foundplayer = entity.uuid}))
+                    ws.send(textutils.serialize({"foundplayer" = entity.uuid}))
                 end
             end
         elseif cross.attack then
@@ -91,7 +92,7 @@ function patrol()
             end
             cross.attack = false
             print("Target lost or defeated")
-            ws.send(textutils.serialize({targetlost = targetUUID}))
+            ws.send(textutils.serialize({"targetlost" = targetUUID}))
         end
     end
 end
