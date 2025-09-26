@@ -1,6 +1,39 @@
 import asyncio
 import websockets
 import logging
+from aiohttp import web
+
+ip = "0.0.0.0"
+websocketport = 8081
+httpport = 8082
+
+
+logs_buffer = []
+
+class BufferHandler(logging.Handler):
+    def emit(self, record):
+        logs_buffer.append(self.format(record))
+        if len(logs_buffer) > 1000:
+            logs_buffer.pop(0)
+
+buffer_handler = BufferHandler()
+buffer_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logging.getLogger().addHandler(buffer_handler)
+
+async def logs_handler(request):
+    return web.Response(text="\n".join(logs_buffer), content_type='text/plain')
+
+def start_http_server():
+    app = web.Application()
+    app.router.add_get('/logs', logs_handler)
+    runner = web.AppRunner(app)
+    return runner
+
+async def run_http_server():
+    runner = start_http_server()
+    await runner.setup()
+    site = web.TCPSite(runner, ip, httpport)
+    await site.start()
 
 logging.basicConfig(level=logging.INFO)
 
@@ -70,10 +103,14 @@ async def send_to_all_clients(message):
             logging.warning(f"Failed to send to {client_id}: {e}")
 
 async def main():
-    server = await websockets.serve(handle_client, "0.0.0.0", 8081)
-    logging.info("WebSocket server started on ws://0.0.0.0:8081")
+    server = await websockets.serve(handle_client, ip, websocketport)
+    logging.info(f"WebSocket server started on ws://{ip}:{websocketport}")
     asyncio.create_task(tick_loop())
+    logging.info("ensuring background task is running")
+    await run_http_server()
+    logging.info(f"Starting HTTP server on http://{ip}:{httpport}/logs")
     await server.wait_closed()
+    logging.info("WebSocket server closed")
 
 async def tick_loop():
     while False: # come back later, plz
