@@ -30,7 +30,7 @@ if not ws then
 end
 
 print("Connected to WebSocket. Sending computer ID:", id)
-ws.send(textutils.serialize({"id" = id}))
+ws.send(textutils.serialize({id = id}))
 
 function wb()
     global cross
@@ -78,7 +78,7 @@ function patrol()
             for i, entity in ipairs(entitylist) do
                 if entity.name == "minecraft:player" then
                     print("Player detected:", entity.name)
-                    ws.send(textutils.serialize({"foundplayer" = entity.uuid}))
+                    ws.send(textutils.serialize({foundplayer = entity.uuid}))
                 end
             end
         elseif cross.attack then
