@@ -17,3 +17,4 @@ This program uses a python server an androids to monitor areas and attack unwant
 
 ## Notices:
 This program is early in beta, its going to take some time before getting close to finishing. Also this program is designed as a part of a server I'm in, so this program may support things that aren't publically avalible
+The server and client are about to undergo a huge reprogramming, so expect big changes
